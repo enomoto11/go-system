@@ -1,14 +1,38 @@
 package main
 
 import (
-	"encoding/json"
+	"encoding/csv"
 	"os"
 )
 
 func main() {
-	encoder := json.NewEncoder(os.Stdout)
-	encoder.SetIndent("", " ")
-	encoder.Encode(map[string]string{
-		"example": "encoding/json",
-		"hello":   "world"})
+	file, err := os.Create("test.csv")
+
+	if err != nil {
+		panic(err)
+	}
+
+	arr := [][]string{
+		{
+			"csv",
+			"csv",
+		},
+		{
+			"csv",
+			"csv",
+			"csv",
+		}, {
+			"csv",
+			"csv",
+			"csv",
+			"csv",
+		},
+	}
+
+	writer := csv.NewWriter(file)
+	writer.Comma = '¥'
+
+	writer.WriteAll(arr)
+	writer.Flush()
+
 }
