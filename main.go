@@ -1,38 +1,44 @@
 package main
 
 import (
-	"encoding/csv"
+	"compress/gzip"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
 	"os"
 )
 
-func main() {
-	file, err := os.Create("test.csv")
+func handler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Encoding", "gzip")
+	w.Header().Set("Content-Type", "application/json")
+	// json化する元のデータ
+	source := map[string]string{
+		"Hello": "World",
+	}
 
+	// ここにコードを書く
+	jsonSource, err := json.Marshal(source)
 	if err != nil {
-		panic(err)
+		fmt.Println("JSON marshal error: ", err)
 	}
 
-	arr := [][]string{
-		{
-			"csv",
-			"csv",
-		},
-		{
-			"csv",
-			"csv",
-			"csv",
-		}, {
-			"csv",
-			"csv",
-			"csv",
-			"csv",
-		},
-	}
+	// gzip-------------------
+	gzipWriter := gzip.NewWriter(w)
+	gzipWriter.Header.Name = "test.txt"
+	// gzip-------------------
 
-	writer := csv.NewWriter(file)
-	writer.Comma = '¥'
+	// file--------------------
+	file, _ := os.Create("test2.txt")
+	defer file.Close()
+	// file--------------------
 
-	writer.WriteAll(arr)
-	writer.Flush()
+	writer := io.MultiWriter(gzipWriter, os.Stdout, file)
+	io.WriteString(writer, string(jsonSource))
+	gzipWriter.Flush()
 
+}
+func main() {
+	http.HandleFunc("/", handler)
+	http.ListenAndServe(":8080", nil)
 }
