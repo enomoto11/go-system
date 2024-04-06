@@ -1,0 +1,5 @@
+chunk 'IHDR' (13 bytes)
+chunk 'teXt' (13 bytes)
+Lambda Note++
+chunk 'IDAT' (226876 bytes)
+chunk 'IEND' (0 bytes)
