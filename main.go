@@ -1,14 +1,32 @@
 package main
 
-import "time"
+import (
+	"flag"
+	"io"
+	"os"
+)
 
 func main() {
-	duration := 10 * time.Second
+	execute1()
+	execute2()
+}
 
-	channel := time.After(duration)
+func execute1() {
+	oldFile, _ := os.Open("old.txt")
+	newFile, _ := os.Create("new.txt")
 
-	println("start")
-	<-channel
+	io.Copy(newFile, oldFile)
+}
 
-	println("end")
+func execute2() {
+	flag.Parse()
+	fileName := flag.Arg(0)
+
+	copiedFile, err := os.Open(fileName)
+	if err != nil {
+		panic(err)
+	}
+
+	newFile, _ := os.Create("new.txt")
+	io.Copy(newFile, copiedFile)
 }
