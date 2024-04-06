@@ -1,20 +1,27 @@
 package main
 
 import (
-	"bufio"
+	"encoding/csv"
 	"fmt"
+	"io"
 	"strings"
 )
 
-var source = `1行め
-2行め
-3行め`
+var csvSource = `13101,"100 ","1000003"," トウキョウト "," チヨダク "," ヒトツバシ (1 チョウメ )"," 東京都 "," 千代田区 "," 一ツ橋(1丁目)",1,0,1,0,0,0
+13101,"101 ","1010003"," トウキョウト "," チヨダク "," ヒトツバシ (2 チョウメ )"," 東京都 "," 千代田区 "," 一ツ橋(2丁目)",1,0,1,0,0,0
+13101,"100 ","1000012"," トウキョウト "," チヨダク "," ヒビヤコウエン "," 東京都 "," 千代田区 "," 日比谷公園 ",0,0,0,0,0,0
+13101,"102 ","1020093"," トウキョウト "," チヨダク "," ヒラカワチョウ "," 東京都 "," 千代田区 "," 平河町 ",0,0,1,0,0,0
+13101,"102 ","1020071"," トウキョウト "," チヨダク "," フジミ "," 東京都 "," 千代田区 "," 富士見 ",0,0,1,0,0,0`
 
 func main() {
-	scanner := bufio.NewScanner(strings.NewReader(source))
+	reader := strings.NewReader(csvSource)
+	csvReader := csv.NewReader(reader)
 
-	for scanner.Scan() {
-		fmt.Printf("%#v\n", scanner.Text())
-		// fmt.Printf("%#v\n", scanner.Text())
+	for {
+		line, err := csvReader.Read()
+		if err == io.EOF {
+			break
+		}
+		fmt.Println(line[2], line[6:9])
 	}
 }
