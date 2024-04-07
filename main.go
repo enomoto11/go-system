@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"io"
 	"os"
 )
@@ -9,7 +8,6 @@ import (
 func main() {
 	// prepare()
 	execute1()
-	// execute2()
 }
 
 func prepare() {
@@ -39,17 +37,4 @@ func execute1() {
 	io.WriteString(newFile, string(byte))
 
 	// io.Copy(newFile, oldFile)
-}
-
-func execute2() {
-	flag.Parse()
-	fileName := flag.Arg(0)
-
-	copiedFile, err := os.Open(fileName)
-	if err != nil {
-		panic(err)
-	}
-
-	newFile, _ := os.Create("new.txt")
-	io.Copy(newFile, copiedFile)
 }
