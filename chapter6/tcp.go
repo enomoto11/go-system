@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -24,27 +25,65 @@ func main() {
 		}
 
 		go func() {
+			defer conn.Close()
 			fmt.Printf("Accept %v\n", conn.RemoteAddr())
 
-			// リクエストを読み込む
-			request, err := http.ReadRequest(bufio.NewReader(conn))
-			if err != nil {
-				panic(err)
+			for {
+				// タイムアウトを設定
+				conn.SetReadDeadline(time.Now().Add(5 * time.Second))
+				// リクエストを読み込む
+				request, err := http.ReadRequest(bufio.NewReader(conn))
+				if err != nil {
+					// タイムアウトもしくはソケットクローズ時は終了
+					// それ以外はエラーにする
+					neterr, ok := err.(net.Error) // ダウンキャスト
+					if ok && neterr.Timeout() {
+						fmt.Println("Timeout")
+						break
+					} else if err == io.EOF {
+						break
+					}
+					panic(err)
+				}
+				// リクエストを表示
+				dump, err := httputil.DumpRequest(request, true)
+				if err != nil {
+					panic(err)
+				}
+				fmt.Println(string(dump))
+				content := "Hello World\n"
+				// レスポンスを書き込む
+				// HTTP/1.1かつ、ContentLengthの設定が必要
+				response := http.Response{
+					StatusCode:    200,
+					ProtoMajor:    1,
+					ProtoMinor:    1,
+					ContentLength: int64(len(content)),
+					Body: io.NopCloser(
+						strings.NewReader(content),
+					),
+				}
+				response.Write(conn)
 			}
-			dump, err := httputil.DumpRequest(request, true)
-			if err != nil {
-				panic(err)
-			}
-			fmt.Println(string(dump))
 
-			response := http.Response{
-				StatusCode: 200,
-				ProtoMajor: 1,
-				ProtoMinor: 0,
-				Body:       io.NopCloser(strings.NewReader("Hello World\n")),
-			}
-			response.Write(conn)
-			conn.Close()
+			// // リクエストを読み込む
+			// request, err := http.ReadRequest(bufio.NewReader(conn))
+			// if err != nil {
+			// 	panic(err)
+			// }
+			// dump, err := httputil.DumpRequest(request, true)
+			// if err != nil {
+			// 	panic(err)
+			// }
+			// fmt.Println(string(dump))
+
+			// response := http.Response{
+			// 	StatusCode: 200,
+			// 	ProtoMajor: 1,
+			// 	ProtoMinor: 0,
+			// 	Body:       io.NopCloser(strings.NewReader("Hello World\n")),
+			// }
+			// response.Write(conn)
 		}()
 	}
 }
