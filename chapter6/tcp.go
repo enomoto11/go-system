@@ -38,8 +38,11 @@ func processSession(conn net.Conn) {
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(string(dump)) // レスポンスを書き込む
-		response := http.Response{StatusCode: 200,
+		fmt.Println(string(dump))
+
+		// レスポンスを書き込む
+		response := http.Response{
+			StatusCode: 200,
 			ProtoMajor: 1,
 			ProtoMinor: 1,
 			Header:     make(http.Header),
